@@ -89,13 +89,7 @@ with tabs[1]:
     uploaded_file = st.file_uploader("Sube un archivo JSON con los datos de entrada:", type="json")
     if uploaded_file:
         data = json.load(uploaded_file)
-
-        # Eliminar uno de los modelos chinos (Qwen-7B)
-        if "Qwen-7B" in data["modelos"]:
-            idx = data["modelos"].index("Qwen-7B")
-            for k in data["matriz"]:
-                data["matriz"][k].pop(idx)
-            data["modelos"].remove("Qwen-7B")
+        
 
         modelos = data["modelos"]
         matriz_dict = data["matriz"]
