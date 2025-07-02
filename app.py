@@ -7,8 +7,11 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-st.set_page_config(page_title="Comparador de LLMs con TOPSIS", layout="wide")
-st.title("🔍 Comparador de Modelos de Lenguaje Abiertos (LLMs) usando TOPSIS")
+st.set_page_config(page_title="Comparador de LLMs con TOPSIS", layout="wide", initial_sidebar_state="expanded", 
+                   page_icon="🧠")
+
+st.title("🧠 LLMscore")
+# st.subheader("Evaluador multicriterio de modelos de lenguaje abiertos (LLMs) mediante el método TOPSIS")
 
 # Definición de nombres cortos para criterios en radar plot
 nombre_corto = {
@@ -20,54 +23,70 @@ nombre_corto = {
     "Seguridad": "Seguridad"
 }
 
-def exportar_radar_grid(promedio_df, nombre_corto):
-    modelos = promedio_df.index.tolist()
-    criterios = list(nombre_corto.keys())
-    etiquetas = list(nombre_corto.values())
-    num_modelos = len(modelos)
 
-    fig = plt.figure(figsize=(18, 18))
-    gs = gridspec.GridSpec(3, 3)
-
-    N = len(criterios)
-    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
-    angles += angles[:1]  # Cierra el círculo
-
-    for i, modelo in enumerate(modelos):
-        valores = promedio_df.loc[modelo, criterios].tolist()
-        valores += valores[:1]  # Cierra el polígono
-
-        ax = fig.add_subplot(gs[i], polar=True)
-        ax.plot(angles, valores, color='black', linewidth=2)
-        ax.fill(angles, valores, color='gray', alpha=0.3)
-        ax.set_title(modelo, fontsize=14, color='black', pad=20)
-        ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(etiquetas, color='black', fontsize=10)
-        ax.set_yticklabels([])
-        ax.spines['polar'].set_color('black')
-        ax.grid(color='black', linestyle='dotted')
-
-    fig.tight_layout()
-    return fig
-
-
-tabs = st.tabs(["🧭 Instrucciones", "🔍 Análisis", "📘 Acerca de"])
+tabs = st.tabs(["Instrucciones", "Análisis", "Acerca de"])
 
 with tabs[0]:
-    st.header("🧭 Cómo usar esta aplicación")
     st.markdown("""
-    - **Sube un archivo JSON** que contenga los datos de evaluación de modelos (estructura predefinida).
-    - La app elimina automáticamente el modelo "Qwen-7B" para mantener 9 modelos.
-    - Se muestran la matriz de evaluación, ponderaciones, ranking TOPSIS y gráficos.
-    - Puedes descargar los resultados en Excel y la imagen combinada de radar en PNG.
-    - Los gráficos individuales son interactivos y se muestran con Plotly.
-    - El gráfico global en grid (3x3) se exporta con matplotlib para mejor calidad de imagen.
+    Esta aplicación permite comparar modelos de lenguaje abiertos (LLMs) mediante el método multicriterio TOPSIS, evaluando su rendimiento en criterios relevantes para entornos educativos.
+
+    ### Formato del archivo JSON esperado
+
+    El archivo debe contener cuatro claves principales:
+
+    - `"modelos"`: lista con los nombres de los modelos a comparar.
+    - `"matriz"`: diccionario de subcriterios, cada uno asociado a una lista de valores por modelo.
+    - `"pesos"`: diccionario con los pesos asignados a cada subcriterio (la suma debe ser 1).
+    - `"criterios"`: agrupación de subcriterios en criterios globales.
+
+    #### Ejemplo de estructura:
+    ```json
+    {
+      "modelos": ["Model A", "Model B"],
+      "matriz": {
+        "Criterio 1": [3, 4],
+        "Criterio 2": [5, 2]
+      },
+      "pesos": {
+        "Criterio 1": 0.5,
+        "Criterio 2": 0.5
+      },
+      "criterios": {
+        "Grupo 1": ["Criterio 1", "Criterio 2"]
+      }
+    }
+    ```
+
+    Puedes cargar tu propio archivo o descargar una plantilla editable a continuación.
     """)
 
-with tabs[1]:
-    st.header("🔍 Análisis de Modelos")
+    from io import BytesIO
+    import json
+    plantilla_json = {
+        "modelos": ["Modelo A", "Modelo B"],
+        "matriz": {
+            "Facilidad de instalación": [4, 3],
+            "Uso de RAM": [2, 5]
+        },
+        "pesos": {
+            "Facilidad de instalación": 0.5,
+            "Uso de RAM": 0.5
+        },
+        "criterios": {
+            "Accesibilidad": ["Facilidad de instalación"],
+            "Requisitos técnicos": ["Uso de RAM"]
+        }
+    }
 
-    uploaded_file = st.file_uploader("📄 Sube un archivo JSON con los datos de entrada:", type="json")
+    buffer_json = BytesIO()
+    buffer_json.write(json.dumps(plantilla_json, indent=2).encode("utf-8"))
+    buffer_json.seek(0)
+    st.download_button("Descargar plantilla JSON", data=buffer_json, file_name="plantilla_llms.json", mime="application/json")
+
+with tabs[1]:
+    st.header("Análisis de Modelos")
+
+    uploaded_file = st.file_uploader("Sube un archivo JSON con los datos de entrada:", type="json")
     if uploaded_file:
         data = json.load(uploaded_file)
 
@@ -86,7 +105,7 @@ with tabs[1]:
         # DataFrame con subcriterios como filas y modelos como columnas
         matriz = pd.DataFrame(matriz_dict, index=modelos).T
 
-        st.subheader("📊 Matriz de Evaluación (LLMs como columnas)")
+        st.subheader("Matriz de Evaluación (LLMs como columnas)")
         st.dataframe(matriz, use_container_width=True)
 
         st.subheader("⚖️ Ponderaciones de Subcriterios")
@@ -126,32 +145,51 @@ with tabs[1]:
 
         promedio_df = pd.DataFrame(promedio_criterios, index=modelos)
 
-        st.subheader("📈 Promedios por Criterio Global")
+        st.subheader("Promedios por Criterio Global")
         st.dataframe(promedio_df, use_container_width=True)
 
-        # --- Gráficos individuales interactivos (Plotly) ---
-        st.subheader("📊 Gráficos Interactivos por Modelo")
-        for modelo in modelos:
+        st.subheader("Gráficos Interactivos por Modelo")
+        cols = st.columns(3)
+        for idx, modelo in enumerate(modelos):
             df_plot = promedio_df.loc[modelo].reset_index()
             df_plot.columns = ["Criterio", "Valor"]
-            fig = px.line_polar(df_plot, r="Valor", theta="Criterio", line_close=True,
-                                title=modelo, markers=True)
-            fig.update_traces(line=dict(color="black"))
+
+            # Usar nombres cortos para etiquetas y agregar saltos de línea si quieres
+            df_plot["Criterio"] = df_plot["Criterio"].map(nombre_corto)
+
+            # O bien para saltos de línea:
+            # df_plot["Criterio"] = df_plot["Criterio"].apply(lambda x: x.replace(" ", "<br>"))
+
+            fig = px.line_polar(df_plot, r="Valor", theta="Criterio", line_close=True, title=modelo)
+            
+            fig.update_traces(
+                line=dict(color='#E74C3C', width=3),
+                fill='toself',
+                fillcolor='rgba(236, 112, 99, 0.3)'
+            )
+            
             fig.update_layout(
                 polar=dict(
-                    radialaxis=dict(visible=True, range=[0, 5]),
-                    angularaxis=dict(tickfont=dict(color="black"))
+                    bgcolor='#F8F9F9',
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 5],
+                        gridcolor='#D7DBDD',
+                        linecolor='#283747',
+                        tickfont=dict(color='#283747')
+                    ),
+                    angularaxis=dict(
+                        gridcolor='#D7DBDD',
+                        tickfont=dict(color='#283747', size=16),
+                        rotation=90
+                    )
                 ),
-                font_color="black",
-                title_font_color="black"
+                title=modelo,
+                margin=dict(l=20, r=20, t=50, b=80),
+                height=350
             )
-            st.plotly_chart(fig, use_container_width=True)
+            cols[idx % 3].plotly_chart(fig, use_container_width=True)
 
-        # --- Radar plot grid (matplotlib) ---
-        st.subheader("📊 Gráficos de Telaraña Global (Grid 3x3)")
-
-        fig_radar_grid = exportar_radar_grid(promedio_df, nombre_corto)
-        st.pyplot(fig_radar_grid)
 
         # --- Ranking bar chart ---
         st.subheader("🏆 Ranking de Modelos (Gráfico de Barras)")
@@ -161,30 +199,37 @@ with tabs[1]:
         st.plotly_chart(fig_bar, use_container_width=True)
 
         # --- Exportar Excel ---
-        st.subheader("📥 Exportar Resultados")
+        st.subheader("Exportar Resultados")
         buffer_excel = BytesIO()
         with pd.ExcelWriter(buffer_excel, engine='xlsxwriter') as writer:
             matriz.T.to_excel(writer, sheet_name="Matriz")
             pesos.to_frame("Peso").to_excel(writer, sheet_name="Pesos")
             promedio_df.to_excel(writer, sheet_name="Promedios")
             ranking.to_excel(writer, sheet_name="Ranking")
-        st.download_button("📥 Descargar Excel con resultados", data=buffer_excel.getvalue(), file_name="resultados_llms.xlsx")
+        st.download_button("Descargar Excel con resultados", data=buffer_excel.getvalue(), file_name="resultados_llms.xlsx")
 
-        # --- Exportar imagen radar grid ---
-        buffer_img = BytesIO()
-        fig_radar_grid.savefig(buffer_img, format="png", dpi=300, bbox_inches="tight")
-        st.download_button("🖼️ Descargar imagen de radar global (PNG)", data=buffer_img.getvalue(),
-                           file_name="radar_grid_llms.png", mime="image/png")
+        
 
     else:
         st.info("Por favor, sube un archivo JSON con la estructura adecuada para ver el análisis.")
 
 with tabs[2]:
-    st.header("📘 Acerca de esta aplicación")
+    st.header("Acerca de esta aplicación")
     st.markdown("""
-    **Proyecto:** Comparador de Modelos de Lenguaje Abiertos (LLMs) usando TOPSIS  
-    **Autor:** Pavel Novoa Hernández  
-    **Descripción:**  
-    Esta aplicación permite comparar diferentes modelos de lenguaje mediante un análisis multicriterio TOPSIS, mostrando puntuaciones, rankings y visualizaciones.  
-    Se enfoca en modelos open source y permite descargar los resultados para uso académico o profesional.  
+    **Proyecto:** LLMscore 
+    **Descripción:** Esta aplicación permite comparar diferentes modelos de lenguaje mediante un **análisis multicriterio TOPSIS**, mostrando puntuaciones, rankings y visualizaciones. Se enfoca en modelos open source y y permite descargar los resultados para uso académico o profesional.  
     """)
+
+    st.subheader("Autores")
+    st.markdown("""
+    * **[Pavel Novoa Hernández](https://portalciencia.ull.es/investigadores/1244723/detalle)**. Departamento: Ingeniería Informática y de Sistemas (pnovoahe@ull.edu.es).
+    """)
+    st.markdown("""
+    * **[Fulgencio Sánchez Vera](https://portalciencia.ull.es/investigadores/120481/detalle)**. Departamento: Didáctica e Investigación Educativa (fsanchev@ull.edu.es).
+    """)
+    st.markdown("""
+    * **[Betty Coromoto Estévez Cedeño](https://portalciencia.ull.es/investigadores/81945/detalle)**. Departamento: Sociología y Antropología (bestevec@ull.edu.es).
+    """)
+
+    st.subheader("Licencia")
+    st.markdown("Este proyecto está bajo la **Licencia MIT**.")
