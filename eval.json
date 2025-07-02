@@ -1,0 +1,78 @@
+{
+  "modelos": [
+    "LLaMA 2", "Mistral 7B", "BLOOM", "GPT-J", "Flan-T5", "Phi-2",
+    "ChatGLM2", "Yi-6B", "DeepSeek-LLM", "Qwen-7B"
+  ],
+  "matriz": {
+    "Facilidad de instalación": [3,5,4,4,5,5,4,4,3,3],
+    "Compatibilidad de entornos": [3,5,4,4,5,5,4,4,3,3],
+    "Tamaño del modelo": [2,4,2,3,5,5,4,4,4,4],
+    "Necesidad de GPU": [2,3,2,3,5,5,3,4,3,3],
+    "Uso de RAM": [2,3,2,3,5,5,3,4,3,3],
+    "Eficiencia computacional": [3,5,3,3,4,5,4,4,4,4],
+    "Actividad de la comunidad": [5,3,5,3,4,2,4,3,3,3],
+    "Frecuencia de actualizaciones": [5,3,5,3,4,2,4,3,3,3],
+    "Disponibilidad de recursos": [5,3,5,3,4,2,4,3,3,3],
+    "Multitarea": [4,4,4,3,5,3,4,4,4,4],
+    "Soporte multilingüe": [4,3,5,3,4,3,3,3,3,3],
+    "Facilidad de uso en docencia": [4,4,4,3,5,3,4,4,4,4],
+    "Facilidad de fine-tuning": [3,4,4,5,5,3,4,4,4,4],
+    "Documentación técnica": [3,4,5,4,5,3,4,4,4,4],
+    "Flexibilidad temática": [4,4,5,4,5,3,4,4,4,4],
+    "Ejecución local": [5,5,5,5,5,5,5,5,5,5],
+    "Licencia permisiva": [4,5,5,5,5,5,4,4,4,4],
+    "Riesgos de privacidad (inverso)": [5,5,5,4,5,5,5,5,5,5]
+  },
+  "pesos": {
+    "Facilidad de instalación": 0.0362,
+    "Compatibilidad de entornos": 0.0362,
+    "Tamaño del modelo": 0.0362,
+    "Necesidad de GPU": 0.0506,
+    "Uso de RAM": 0.0506,
+    "Eficiencia computacional": 0.0434,
+    "Actividad de la comunidad": 0.0362,
+    "Frecuencia de actualizaciones": 0.0362,
+    "Disponibilidad de recursos": 0.0362,
+    "Multitarea": 0.0362,
+    "Soporte multilingüe": 0.0362,
+    "Facilidad de uso en docencia": 0.0362,
+    "Facilidad de fine-tuning": 0.0362,
+    "Documentación técnica": 0.0362,
+    "Flexibilidad temática": 0.0362,
+    "Ejecución local": 0.0434,
+    "Licencia permisiva": 0.0506,
+    "Riesgos de privacidad (inverso)": 0.0506
+  },
+  "criterios": {
+    "Accesibilidad": [
+      "Facilidad de instalación",
+      "Compatibilidad de entornos",
+      "Tamaño del modelo"
+    ],
+    "Requisitos técnicos": [
+      "Necesidad de GPU",
+      "Uso de RAM",
+      "Eficiencia computacional"
+    ],
+    "Comunidad": [
+      "Actividad de la comunidad",
+      "Frecuencia de actualizaciones",
+      "Disponibilidad de recursos"
+    ],
+    "Educativo": [
+      "Multitarea",
+      "Soporte multilingüe",
+      "Facilidad de uso en docencia"
+    ],
+    "Documentación": [
+      "Facilidad de fine-tuning",
+      "Documentación técnica",
+      "Flexibilidad temática"
+    ],
+    "Seguridad": [
+      "Ejecución local",
+      "Licencia permisiva",
+      "Riesgos de privacidad (inverso)"
+    ]
+  }
+}
